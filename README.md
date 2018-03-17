@@ -1,4 +1,4 @@
-# cs525-s18-gban
+# cs525-s18-SHuang
 This is readme for Group4 's Assignment2.
 
 For basic functions：
