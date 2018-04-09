@@ -1,19 +1,26 @@
-#include "storage_mgr.h"
+//
+//  CS525_A1
+//	Gavin Ban
+//  Git£ºBroKen2300
+//
+
 #include <stdio.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include "storage_mgr.h"
 #include "dberror.h"
-#define I386_PGBYTES 4096
+
 
 //////////////////
 /* basic method */
 
 //check filehandle
-RC handleCheck(SM_FileHandle *fileHandle)
+RC handleCheck(SM_FileHandle *fHandle)
 {
-	if (fileHandle == NULL || fileHandle->mgmtInfo == NULL) {
+
+	if (fHandle == NULL || fHandle->mgmtInfo == NULL) {
 		return RC_FILE_HANDLE_NOT_INIT;
 	}
 	else
@@ -21,56 +28,55 @@ RC handleCheck(SM_FileHandle *fileHandle)
 }
 
 //read data; basic method
-RC readMethod(int pageNum, SM_FileHandle *fileHandle, SM_PageHandle memPage) {
+RC readMethod(int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 
-	//Should we reauthorize?
-	if (handleCheck(fileHandle) != RC_OK) return RC_FILE_HANDLE_NOT_INIT;
+	handleCheck(fHandle);
 
-	FILE* filePtr = fileHandle->mgmtInfo;
+	FILE* filePtr = fHandle->mgmtInfo;
 
-	//checks for invalid pages
-	if (pageNum >= fileHandle->totalNumPages || pageNum<0)
+	if (fseek(filePtr, pageNum*PAGE_SIZE, 0) != 0)
+		return RC_IM_NO_MORE_ENTRIES;
+
+	if (pageNum<0)
 		return RC_READ_NON_EXISTING_PAGE;
 
-	//seeks the start position of data
-	if (fseek(filePtr, pageNum*PAGE_SIZE, SEEK_SET) != 0)
-		return RC_IM_NO_MORE_ENTRIES;
+	if (pageNum >= fHandle->totalNumPages)
+		return RC_READ_NON_EXISTING_PAGE;
 
-	fileHandle->curPagePos = pageNum;
 
-	//reads the data and verifies if the read is successful
+	fHandle->curPagePos = pageNum;
+
 	if (fread(memPage, PAGE_SIZE, 1, filePtr) != 1)
-		return RC_IM_NO_MORE_ENTRIES;
+		return RC_READ_NON_EXISTING_PAGE;
 
 	return RC_OK;
 }
 
 //write data; basic method
-RC writeMethod(int pageNum, SM_FileHandle *fileHandle, SM_PageHandle memPage) {
+RC writeMethod(int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 
-	//Should we reauthorize?
-	if (handleCheck(fileHandle) != RC_OK) return RC_FILE_HANDLE_NOT_INIT;
+	handleCheck(fHandle);
 
-	FILE* filePtr = fileHandle->mgmtInfo;
+	FILE* filePtr = fHandle->mgmtInfo;
 
-	//checks for invalid pages
-	if (pageNum >= fileHandle->totalNumPages)
-		ensureCapacity(pageNum, fileHandle);
-	//return RC_WRITE_NON_EXISTING_PAGE;
 
-	//seeks the start position of data
-	if (fseek(filePtr, pageNum*PAGE_SIZE, SEEK_SET) != 0)
+	if (fseek(filePtr, pageNum*PAGE_SIZE, 0) != 0)
 		return RC_IM_NO_MORE_ENTRIES;
 
-	fileHandle->curPagePos = pageNum;
+	if (pageNum >= fHandle->totalNumPages)
+		ensureCapacity(pageNum, fHandle);
 
-	//writes the data and verifies if the write is successful
+
+	fHandle->curPagePos = pageNum;
+
 	if (fwrite(memPage, PAGE_SIZE, 1, filePtr) != 1)
 		return RC_WRITE_FAILED;
 
 	return RC_OK;
 
 }
+
+
 
 /////////////////////////////
 /* manipulating page files */
@@ -261,3 +267,9 @@ void initStorageManager(void) {
 	free(pg);
 
 }
+
+
+
+
+
+

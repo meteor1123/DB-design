@@ -7,11 +7,6 @@
 // Include bool DT
 #include "dt.h"
 
-//	Lock Define
-#define THREAD_LOCK() pthread_mutex_lock(&(manager->bm_Mutex));
-#define THREAD_UNLOCK() pthread_mutex_unlock(&(manager->bm_Mutex));
-
-
 // Replacement Strategies
 typedef enum ReplacementStrategy {
 	RS_FIFO = 0,
@@ -29,7 +24,7 @@ typedef struct BM_BufferPool {
 	char *pageFile;
 	int numPages;
 	ReplacementStrategy strategy;
-	void *manager; // use this one to store the bookkeeping info your buffer
+	void *mgmtData; // use this one to store the bookkeeping info your buffer
 	// manager needs for a buffer pool
 } BM_BufferPool;
 
@@ -37,6 +32,35 @@ typedef struct BM_PageHandle {
 	PageNumber pageNum;
 	char *data;
 } BM_PageHandle;
+
+/*STRUCT Page Frame Node*/
+typedef struct PageFrameLinkedNode {
+	struct BM_PageHandle *page;
+
+	int isDirty;
+	int pinCount;
+	ReplacementStrategy strategy;
+
+	struct PageFrameLinkedNode* prevNode;
+	struct PageFrameLinkedNode* nextNode;
+
+} PageFrameLinkedNode;
+
+
+/*STRUCT Buffer Info*/
+typedef struct bufferInfo
+{
+	int pageCount;
+
+	int readCount;
+	int writeCount;
+	ReplacementStrategy strategy;
+	struct PageFrameLinkedNode *head;
+	struct PageFrameLinkedNode* current;
+
+	struct SM_FileHandle *fileHandle;
+
+}bufferInfo;
 
 // convenience macros
 #define MAKE_POOL()					\
@@ -60,7 +84,7 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 		const PageNumber pageNum);
 
 // Statistics Interface
-PageNumber *getPagePointerContents (BM_BufferPool *const bm);
+PageNumber *getFrameContents (BM_BufferPool *const bm);
 bool *getDirtyFlags (BM_BufferPool *const bm);
 int *getFixCounts (BM_BufferPool *const bm);
 int getNumReadIO (BM_BufferPool *const bm);

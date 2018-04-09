@@ -26,9 +26,8 @@ typedef int RC;
 #define RC_IM_KEY_ALREADY_EXISTS 301
 #define RC_IM_N_TO_LAGE 302
 #define RC_IM_NO_MORE_ENTRIES 303
-//MODIFIED
-#define RC_FIFO_ERROR 401
-#define RC_LFR_ERROR 402
+
+//my define
 #define RC_OPERATATION_FAILED 404
 
 /* holder for error messages */

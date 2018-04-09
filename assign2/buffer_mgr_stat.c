@@ -16,7 +16,7 @@ printPoolContent (BM_BufferPool *const bm)
 	int *fixCount;
 	int i;
 
-	frameContent = getPagePointerContents(bm);
+	frameContent = getFrameContents(bm);
 	dirty = getDirtyFlags(bm);
 	fixCount = getFixCounts(bm);
 
@@ -40,7 +40,7 @@ sprintPoolContent (BM_BufferPool *const bm)
 	int pos = 0;
 
 	message = (char *) malloc(256 + (22 * bm->numPages));
-	frameContent = getPagePointerContents(bm);
+	frameContent = getFrameContents(bm);
 	dirty = getDirtyFlags(bm);
 	fixCount = getFixCounts(bm);
 
