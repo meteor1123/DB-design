@@ -1,5 +1,4 @@
 ﻿# cs525-s18-shuang
-This is readme for Group4 's Assignment2.
 
 For basic functions：
 In this Assignment, we add buffer_mgr.c to implement buffer functions.In addition, we use the file storage_mgr.c in A1 to continue our work.
